@@ -27,9 +27,9 @@ Agents can now deliver fast (refactor a codebase, retune a pipeline, and report 
 
 | Capability | What It Looks Like Here | Evidence |
 |---|---|---|
-| **Problem framing / defining what to optimize** | Every project starts by deciding what the system should actually optimize rather than accepting the first metric on offer: an explicit pain-point or open-question framing, not a solution looking for a use case; designs get re-scoped once they turn out not to answer the real question | The 7-pain-point enterprise agentic AI framework (BioMed portfolio); RecSys_OBD's "two open problems that make OPE hard in practice"; PhasedVariants' Step 4 finding that generator and evaluator "share a model family and prompt lineage, so no number produced inside that loop can certify it", which triggered a redesign to route correctness checks to external sources |
+| **Problem framing / defining what to optimize** | Every project starts by deciding what the system should actually optimize rather than accepting the first metric on offer: an explicit pain-point or open-question framing, not a solution looking for a use case; designs get re-scoped once they turn out not to answer the real question | The 7-pain-point enterprise agentic AI framework (BioMed portfolio); RecSys_OPE's "two open problems that make OPE hard in practice"; PhasedVariants' Step 4 finding that generator and evaluator "share a model family and prompt lineage, so no number produced inside that loop can certify it", which triggered a redesign to route correctness checks to external sources |
 | **Architecture & trade-off design** | Deliberate, argued decisions about where determinism, rules, ML, and LLM judgment each belong; not a default of "add an agent everywhere" | PhasedVariants' "Hybrid Rule-Based + Agentic" architecture-rationale table; denovo_OLC's evidence ladder (fast path → anchor extension → collective rescue, escalating only when needed) and its three evaluated ML-integration schemes; the Integrated System View diagram below, composing 12 projects across two domains into one production lifecycle |
-| **Critical thinking / catching a confidently-wrong result** | A fast, confident-looking result (the kind a model or an agent hands back after one pass) gets stress-tested before being trusted, not shipped on the strength of its own reported number; negative and disqualifying findings are disclosed and shape the final design rather than being filed away | denovo_OLC's six rejected model-in-the-loop paths, including a classifier with AUC 0.9995 that turned out to predict the wrong target with a reversed discrimination direction: a textbook confidently-wrong result; cLFR_SNVpolish's disclosed chr15/chr19 anomaly and a rejected "fix" that improved one chromosome while making the genome-wide result net negative; RecSys_OBD's causal-boundary test proving a bias correction that looks justified can still increase error; PhasedVariants' concordance benchmark showing "revision helps" and "revision hurts" are both true, model-dependently: a single-model run would have produced a false general claim |
+| **Critical thinking / catching a confidently-wrong result** | A fast, confident-looking result (the kind a model or an agent hands back after one pass) gets stress-tested before being trusted, not shipped on the strength of its own reported number; negative and disqualifying findings are disclosed and shape the final design rather than being filed away | denovo_OLC's six rejected model-in-the-loop paths, including a classifier with AUC 0.9995 that turned out to predict the wrong target with a reversed discrimination direction: a textbook confidently-wrong result; cLFR_SNVpolish's disclosed chr15/chr19 anomaly and a rejected "fix" that improved one chromosome while making the genome-wide result net negative; RecSys_OPE's causal-boundary test proving a bias correction that looks justified can still increase error; PhasedVariants' concordance benchmark showing "revision helps" and "revision hurts" are both true, model-dependently: a single-model run would have produced a false general claim |
 
 These aren't incidental footnotes; they're the discipline that keeps a system honest after it ships, which is what separates a demo from a product.
 
@@ -54,71 +54,6 @@ This portfolio demonstrates end-to-end ownership across that lifecycle, with sta
 
 ---
 
-## Fit with AI-Accelerated Drug Development & Precision Medicine
-
-Public reporting on "AI accelerating drug development" usually bundles three distinct mechanisms: generative structure/molecule design (AlphaFold, diffusion-based protein design), LLM-assisted interpretation of literature and omics data for target discovery, and agentic automation of the bioinformatics pipelines that feed those models. This portfolio's biomedical work sits in the second and third layers, plus the data-reliability layer both depend on; not in molecule/chemistry design or clinical trial operations. That scope is a deliberate boundary, not a gap.
-
-| Layer in AI-accelerated drug/precision-medicine pipelines | Known limitation reported in the field | Portfolio evidence |
-|---|---|---|
-| **Reliable genomic/omics data substrate** | Sequencing throughput has outpaced analysis capacity; data quality, not model capability, is the reported bottleneck for downstream target-ID and interpretation models | LFR Data Monitor (QC drift detection before it reaches variant calling); DeepVariant fine-tuning (detect → retrain → validate under distribution shift); DNBSEQ WGS Pipeline (auditable, reproducible calling) |
-| **Evidence-grounded target/variant interpretation** | Surveys of LLMs in drug discovery report that text-only LLM output is fluent but "unreliable for target and drug prioritization without cohort-specific quantitative evidence" | PhasedVariants AgenticCurator routes correctness checks to external structured sources (ClinGen/ClinVar) instead of the model's self-reported citations, after finding those citations unresolvable: the same fix the literature calls for |
-| **Agentic bioinformatics pipeline automation** | "Agentic bioinformatics" is described as an emerging paradigm for pipeline design, with few production-grade examples published | Agentic bioArchitect (multi-agent pipeline design with reviewer-gated iteration); denovo_OLC's evidence ladder (escalating to a model only when a cheap rule is insufficient) |
-
-This is also the layer where genomics/diagnostics companies (e.g., Natera, Tempus) and functional-genomics-first drug discovery companies (e.g., Recursion, Insitro) spend most of their engineering effort; closer to what these projects actually do than a claim of doing molecule design or trial simulation would be.
-
----
-
-## Fit with Current AI4S (AI for Science) Pain Points
-
-A consensus is forming in 2026's AI4S discourse: an agent completing a workflow is not the same as the workflow's conclusion being trustworthy. That distinction is the framing this portfolio was designed around from the start, not a disclaimer added after the fact.
-
-| AI4S Pain Point (2026 industry/academic reporting) | Portfolio Evidence |
-|---|---|
-| A mid-2026 benchmark of agentic bioinformatics found the dominant failure mode is **planning error** (wrong reference genome, ignored study design, inappropriate statistics, confidence exceeding what the evidence supports), not execution faults; a workflow can "complete" and still produce an unreliable biological conclusion | denovo_OLC's six rejected model-in-the-loop paths, including a classifier with AUC 0.9995 that predicted the wrong target entirely: a textbook case of "ran cleanly, wrong conclusion"; PhasedVariants AgenticCurator routes correctness checks outside the model's own loop, to external ClinGen/ClinVar evidence, after finding the generator's self-reported citations were unresolvable |
-| Reproducibility literature warns that unstated genome, annotation, and tool versions produce false discrepancies, and that measurement-to-dataset pipelines should be treated as auditable inference components rather than black-box preprocessing | DNBSEQ Complete WGS Pipeline's containerized, configurable caller/aligner design for reproducibility; LFR Data Monitor's per-run feature matrix turning sequencing QC into a trackable monitoring problem; cLFR_SNVpolish's chromosome-held-out cross-validation with disclosed, not silently patched, chr15/chr19 anomalies |
-| The field broadly reports that data-driven AI4S models lack the correctness guarantees of traditional scientific computing and can produce misleading conclusions, while rising retractions and reproducibility failures raise doubts about science's own capacity to self-correct | The portfolio-wide discipline of disclosing negative and disqualifying findings rather than filing them away: RecSys_OBD's causal-boundary test falsifying a bias correction that looks justified; AgenticRL falsifying the intuitive "richer logging implies a better policy" hypothesis; denovo_OLC and cLFR_SNVpolish disclosing rather than masking anomalous results |
-| Generative foundation-model applications in chemistry/biology/materials (molecule design, protein structure prediction) face distinct trustworthiness and physical-consistency challenges: currently one of AI4S's most invested-in yet hardest-to-verify directions | Out of scope for this portfolio by design; the work here focuses on evidence-grounded interpretation and verified bioinformatics pipeline automation, not molecule/structure generation, consistent with the scope boundary noted in the drug-development section above |
-
-In short, this portfolio already addresses the core pain point repeatedly raised in 2026 AI4S discussions: a completed workflow is not a trustworthy conclusion. Auditability, external evidence verification, and honestly disclosing negative results are what's missing, and hardest to productionize, in agentic AI4S systems today.
-
----
-
-## Factor Coverage
-
-| Project | Biomedical | Agentic AI | MLOps / Production ML | Core Signal |
-|---|:---:|:---:|:---:|---|
-| [DNBSEQ Complete WGS Pipeline](https://github.com/Complete-Genomics/DNBSEQ_Complete_WGS) | Yes |  | Yes | Production genomics pipeline with auditable, reproducible WGS analysis |
-| [LFR Data Monitor](https://github.com/arcadianlyric/LFR_DataMonitor) | Yes |  | Yes | Sequencing QC and drift detection before model degradation becomes silent |
-| [Google DeepVariant Fine-Tuning](https://github.com/arcadianlyric/GoogleDeepVariant_FineTuning) | Yes |  | Yes | Detect -> retrain -> validate pattern for shifted sequencing distributions |
-| [PhasedVariants AgenticCurator](https://github.com/arcadianlyric/PhasedVariants_AgenticCurator) | Yes | Yes | Yes | Three-agent sprint harness with external-evidence evaluation (ClinGen/ClinVar) and deterministic scoring for grounded variant interpretation |
-| [AgenticEval](https://github.com/arcadianlyric/AgenticEval) |  | Yes | Yes | Reusable eval framework for agent traces: tool accuracy, hallucination rate, stop-decision quality, 5-dim scoring |
-| [Agentic bioArchitect](https://github.com/arcadianlyric/Agentic_bioArchitect) | Yes | Yes | Yes | Multi-agent design and implementation of bioinformatics pipelines |
-| [ZeroShot Immune Feature Drift](https://github.com/arcadianlyric/ZeroShot_ImmuneFeatureDrift) | Yes |  | Yes | Foundation model embedding drift for longitudinal immune monitoring |
-| [denovo_OLC](https://github.com/Complete-Genomics/cLFR_denovo_OLC) | Yes |  | Yes | Evidence-aware per-UMI assembly; rule-vs-ML-vs-shadow-model production decision with six rejected model-in-the-loop paths |
-| [cLFR_SNVpolish](https://github.com/Complete-Genomics/cLFR_SNVpolish) | Yes |  | Yes | LightGBM molecule-linkage confidence scoring for post-consensus SNV polish, shipped canary-gated |
-| [AgenticGEM DataDrift AutoRetrainer](https://github.com/arcadianlyric/AgenticGEM_DataDrift_AutoRetrainer) |  | Yes | Yes | LangGraph monitor -> evaluate -> retrain loop for ads ranking drift |
-| [MLOps Taxi Platform](https://github.com/arcadianlyric/Agentic_MLOps_Platform) |  |  | Yes | Full production ML platform with TFX, Feast, MLflow, Kafka, and observability |
-| [RS ColdStart GraphRAG LLM](https://github.com/arcadianlyric/RS_coldstart_graphRAG_LLM) |  | Yes | Yes | Multimodal GraphRAG for cold-start recommendation |
-| [Movie RecSys](https://github.com/arcadianlyric/RS_movies) |  |  | Yes | Hybrid recommendation stack with offline, nearline, and online serving layers |
-| [RecSys_OBD](https://github.com/arcadianlyric/RecSys_OBD) |  |  | Yes | **Causal inference**: propensity-weighted / doubly-robust estimators (IPS/DR) for off-policy value estimation (the off-policy version of average-treatment-effect estimation), data-scale-dependent estimator selection, and a falsifiable causal boundary for position-bias (confounding) correction |
-| [AgenticRL](https://github.com/arcadianlyric/AgenticRL) |  |  | Yes | Offline RL (Conservative Q-Learning) trained on real logged bandit data, verified through RecSys_OBD's own OPE pipeline; checks that CQL's conservative-penalty design goal actually holds, and falsifies "richer logging signal implies a better policy" |
-| [RecSys_ABtest](https://github.com/arcadianlyric/RecSys_ABtest) |  | Yes | Yes | **Causal inference**: A/B analysis toolkit (power/CUPED/SRM/sequential testing) + uplift/CATE targeting (heterogeneous treatment effect estimation, S/T/X-learner), closed by an ablation-laddered LLM agent that judges ship-decisions against constructed trap ground truth |
-
----
-
-## Agentic Stability Pain Points I Address
-
-| Pain Point | Why It Breaks Production | Portfolio Evidence |
-|---|---|---|
-| Multi-step error compounding | A 95% reliable step becomes unreliable across long chains | AgenticCurator review loop; bioArchitect researcher -> analyst -> reviewer workflow |
-| Tool-use unreliability | Agents hallucinate parameters, call tools in the wrong order, or miss failures | Structured retrieval wrappers, explicit tool outputs, cross-model review; **RecSys_ABtest**'s deterministic function-calling layer, where the agent can only obtain numbers via tool calls and never computes them itself |
-| Evaluation gap | Teams cannot deploy agents without measurable quality gates | **AgenticEval** deterministic trace evaluator; AgenticCurator's external-evidence layer and ClinGen concordance benchmark; RecSys_OBD's ground-truthed OPE estimator benchmark; chromosome-held-out CV in cLFR_SNVpolish; **RecSys_ABtest**'s 10-trap constructed-ground-truth ship-decision benchmark (100% trap recall, 0% numeric hallucination once tool-calling is added); **AgenticRL**'s checked, not assumed, verification that CQL's conservative penalty compresses an 8x offline-RL overestimation failure to 2.2% of ground truth |
-| Observability blindness | Failures are hard to debug without traces, metrics, and lineage | MLOps Taxi monitoring stack; LFR drift feature matrices; Prometheus metrics in AgenticGEM; denovo_OLC's shadow-model disagreement monitoring |
-| Context degradation | Long sessions and poor retrieval cause agents to reason from weak context | FAISS grounding, knowledge graph context, progressive literature search |
-| Human-in-the-loop design | Agents either over-ask humans or continue when they should stop | Quality thresholds, revise/stop logic, escalation decisions; **RecSys_ABtest**'s A0->A3 ablation ladder, where a second-model skeptical verifier gates the ship/escalate decision |
-| Production drift | ML tools degrade when input distributions shift | LFR DataMonitor, DeepVariant fine-tuning, AgenticGEM retraining loop, ZeroShot drift metrics, denovo_OLC's explicit drift-gated retraining workflow |
-
----
 
 ## Integrated System View
 
@@ -145,8 +80,8 @@ flowchart TD
     subgraph MLOPS["Production MLOps Layer"]
         TAXI["MLOps Taxi<br/>TFX · Feast · MLflow · Kafka · Prometheus · Kubernetes"]
         RECSYS["Movie RecSys<br/>offline / nearline / online serving"]
-        OBD["RecSys_OBD<br/>causal inference: OPE estimators · position-bias (confounding) correction"]
-        RL["AgenticRL<br/>offline CQL / reward-model policy · OPE-verified value"]
+        OBD["RecSys_OPE<br/>causal inference: OPE estimators · position-bias (confounding) correction"]
+        RL["RecSys_OPL<br/>offline CQL / reward-model policy · OPE-verified value"]
         ABAB["RecSys_ABtest Part A/B<br/>causal inference: power/CUPED/SRM/sequential · uplift-CATE"]
         OBS["Observability<br/>metrics · logs · drift reports · alerts"]
     end
@@ -178,6 +113,72 @@ This view shows the same operating principle across domains:
 3. Use agents where multi-step reasoning, retrieval, or orchestration adds leverage.
 4. Add evaluation, reflection, and stop criteria so the agent can be trusted.
 5. Close the loop with retraining, fallback, escalation, or human review.
+
+---
+
+## Fit with AI-Accelerated Drug Development & Precision Medicine
+
+Public reporting on "AI accelerating drug development" usually bundles three distinct mechanisms: generative structure/molecule design (AlphaFold, diffusion-based protein design), LLM-assisted interpretation of literature and omics data for target discovery, and agentic automation of the bioinformatics pipelines that feed those models. This portfolio's biomedical work sits in the second and third layers, plus the data-reliability layer both depend on; not in molecule/chemistry design or clinical trial operations. That scope is a deliberate boundary, not a gap.
+
+| Layer in AI-accelerated drug/precision-medicine pipelines | Known limitation reported in the field | Portfolio evidence |
+|---|---|---|
+| **Reliable genomic/omics data substrate** | Sequencing throughput has outpaced analysis capacity; data quality, not model capability, is the reported bottleneck for downstream target-ID and interpretation models | LFR Data Monitor (QC drift detection before it reaches variant calling); DeepVariant fine-tuning (detect → retrain → validate under distribution shift); DNBSEQ WGS Pipeline (auditable, reproducible calling) |
+| **Evidence-grounded target/variant interpretation** | Surveys of LLMs in drug discovery report that text-only LLM output is fluent but "unreliable for target and drug prioritization without cohort-specific quantitative evidence" | PhasedVariants AgenticCurator routes correctness checks to external structured sources (ClinGen/ClinVar) instead of the model's self-reported citations, after finding those citations unresolvable: the same fix the literature calls for |
+| **Agentic bioinformatics pipeline automation** | "Agentic bioinformatics" is described as an emerging paradigm for pipeline design, with few production-grade examples published | Agentic bioArchitect (multi-agent pipeline design with reviewer-gated iteration); denovo_OLC's evidence ladder (escalating to a model only when a cheap rule is insufficient) |
+
+This is also the layer where genomics/diagnostics companies (e.g., Natera, Tempus) and functional-genomics-first drug discovery companies (e.g., Recursion, Insitro) spend most of their engineering effort; closer to what these projects actually do than a claim of doing molecule design or trial simulation would be.
+
+---
+
+## Fit with Current AI4S (AI for Science) Pain Points
+
+A consensus is forming in 2026's AI4S discourse: an agent completing a workflow is not the same as the workflow's conclusion being trustworthy. That distinction is the framing this portfolio was designed around from the start, not a disclaimer added after the fact.
+
+| AI4S Pain Point (2026 industry/academic reporting) | Portfolio Evidence |
+|---|---|
+| A mid-2026 benchmark of agentic bioinformatics found the dominant failure mode is **planning error** (wrong reference genome, ignored study design, inappropriate statistics, confidence exceeding what the evidence supports), not execution faults; a workflow can "complete" and still produce an unreliable biological conclusion | denovo_OLC's six rejected model-in-the-loop paths, including a classifier with AUC 0.9995 that predicted the wrong target entirely: a textbook case of "ran cleanly, wrong conclusion"; PhasedVariants AgenticCurator routes correctness checks outside the model's own loop, to external ClinGen/ClinVar evidence, after finding the generator's self-reported citations were unresolvable |
+| Reproducibility literature warns that unstated genome, annotation, and tool versions produce false discrepancies, and that measurement-to-dataset pipelines should be treated as auditable inference components rather than black-box preprocessing | DNBSEQ Complete WGS Pipeline's containerized, configurable caller/aligner design for reproducibility; LFR Data Monitor's per-run feature matrix turning sequencing QC into a trackable monitoring problem; cLFR_SNVpolish's chromosome-held-out cross-validation with disclosed, not silently patched, chr15/chr19 anomalies |
+| The field broadly reports that data-driven AI4S models lack the correctness guarantees of traditional scientific computing and can produce misleading conclusions, while rising retractions and reproducibility failures raise doubts about science's own capacity to self-correct | The portfolio-wide discipline of disclosing negative and disqualifying findings rather than filing them away: RecSys_OPE's causal-boundary test falsifying a bias correction that looks justified; RecSys_OPL falsifying the intuitive "richer logging implies a better policy" hypothesis; denovo_OLC and cLFR_SNVpolish disclosing rather than masking anomalous results |
+| Generative foundation-model applications in chemistry/biology/materials (molecule design, protein structure prediction) face distinct trustworthiness and physical-consistency challenges: currently one of AI4S's most invested-in yet hardest-to-verify directions | Out of scope for this portfolio by design; the work here focuses on evidence-grounded interpretation and verified bioinformatics pipeline automation, not molecule/structure generation, consistent with the scope boundary noted in the drug-development section above |
+
+In short, this portfolio already addresses the core pain point repeatedly raised in 2026 AI4S discussions: a completed workflow is not a trustworthy conclusion. Auditability, external evidence verification, and honestly disclosing negative results are what's missing, and hardest to productionize, in agentic AI4S systems today.
+
+---
+
+## Factor Coverage
+
+| Project | Biomedical | Agentic AI | MLOps / Production ML | Core Signal |
+|---|:---:|:---:|:---:|---|
+| [DNBSEQ Complete WGS Pipeline](https://github.com/Complete-Genomics/DNBSEQ_Complete_WGS) | Yes |  | Yes | Production genomics pipeline with auditable, reproducible WGS analysis |
+| [LFR Data Monitor](https://github.com/arcadianlyric/LFR_DataMonitor) | Yes |  | Yes | Sequencing QC and drift detection before model degradation becomes silent |
+| [Google DeepVariant Fine-Tuning](https://github.com/arcadianlyric/GoogleDeepVariant_FineTuning) | Yes |  | Yes | Detect -> retrain -> validate pattern for shifted sequencing distributions |
+| [PhasedVariants AgenticCurator](https://github.com/arcadianlyric/PhasedVariants_AgenticCurator) | Yes | Yes | Yes | Three-agent sprint harness with external-evidence evaluation (ClinGen/ClinVar) and deterministic scoring for grounded variant interpretation |
+| [AgenticEval](https://github.com/arcadianlyric/AgenticEval) |  | Yes | Yes | Reusable eval framework for agent traces: tool accuracy, hallucination rate, stop-decision quality, 5-dim scoring |
+| [Agentic bioArchitect](https://github.com/arcadianlyric/Agentic_bioArchitect) | Yes | Yes | Yes | Multi-agent design and implementation of bioinformatics pipelines |
+| [ZeroShot Immune Feature Drift](https://github.com/arcadianlyric/ZeroShot_ImmuneFeatureDrift) | Yes |  | Yes | Foundation model embedding drift for longitudinal immune monitoring |
+| [denovo_OLC](https://github.com/Complete-Genomics/cLFR_denovo_OLC) | Yes |  | Yes | Evidence-aware per-UMI assembly; rule-vs-ML-vs-shadow-model production decision with six rejected model-in-the-loop paths |
+| [cLFR_SNVpolish](https://github.com/Complete-Genomics/cLFR_SNVpolish) | Yes |  | Yes | LightGBM molecule-linkage confidence scoring for post-consensus SNV polish, shipped canary-gated |
+| [AgenticGEM DataDrift AutoRetrainer](https://github.com/arcadianlyric/AgenticGEM_DataDrift_AutoRetrainer) |  | Yes | Yes | LangGraph monitor -> evaluate -> retrain loop for ads ranking drift |
+| [MLOps Taxi Platform](https://github.com/arcadianlyric/Agentic_MLOps_Platform) |  |  | Yes | Full production ML platform with TFX, Feast, MLflow, Kafka, and observability |
+| [RS ColdStart GraphRAG LLM](https://github.com/arcadianlyric/RS_coldstart_graphRAG_LLM) |  | Yes | Yes | Multimodal GraphRAG for cold-start recommendation |
+| [Movie RecSys](https://github.com/arcadianlyric/RS_movies) |  |  | Yes | Hybrid recommendation stack with offline, nearline, and online serving layers |
+| [RecSys_OPE](https://github.com/arcadianlyric/RecSys_OPE) |  |  | Yes | **Causal inference**: propensity-weighted / doubly-robust estimators (IPS/DR) for off-policy value estimation (the off-policy version of average-treatment-effect estimation), data-scale-dependent estimator selection, and a falsifiable causal boundary for position-bias (confounding) correction |
+| [RecSys_OPL](https://github.com/arcadianlyric/RecSys_OPL) |  |  | Yes | Offline RL (Conservative Q-Learning) trained on real logged bandit data, verified through RecSys_OPE's own OPE pipeline; checks that CQL's conservative-penalty design goal actually holds, and falsifies "richer logging signal implies a better policy" |
+| [RecSys_ABtest](https://github.com/arcadianlyric/RecSys_ABtest) |  | Yes | Yes | **Causal inference**: A/B analysis toolkit (power/CUPED/SRM/sequential testing) + uplift/CATE targeting (heterogeneous treatment effect estimation, S/T/X-learner), closed by an ablation-laddered LLM agent that judges ship-decisions against constructed trap ground truth |
+
+---
+
+## Agentic Stability Pain Points I Address
+
+| Pain Point | Why It Breaks Production | Portfolio Evidence |
+|---|---|---|
+| Multi-step error compounding | A 95% reliable step becomes unreliable across long chains | AgenticCurator review loop; bioArchitect researcher -> analyst -> reviewer workflow |
+| Tool-use unreliability | Agents hallucinate parameters, call tools in the wrong order, or miss failures | Structured retrieval wrappers, explicit tool outputs, cross-model review; **RecSys_ABtest**'s deterministic function-calling layer, where the agent can only obtain numbers via tool calls and never computes them itself |
+| Evaluation gap | Teams cannot deploy agents without measurable quality gates | **AgenticEval** deterministic trace evaluator; AgenticCurator's external-evidence layer and ClinGen concordance benchmark; RecSys_OPE's ground-truthed OPE estimator benchmark; chromosome-held-out CV in cLFR_SNVpolish; **RecSys_ABtest**'s 10-trap constructed-ground-truth ship-decision benchmark (100% trap recall, 0% numeric hallucination once tool-calling is added); **RecSys_OPL**'s checked, not assumed, verification that CQL's conservative penalty compresses an 8x offline-RL overestimation failure to 2.2% of ground truth |
+| Observability blindness | Failures are hard to debug without traces, metrics, and lineage | MLOps Taxi monitoring stack; LFR drift feature matrices; Prometheus metrics in AgenticGEM; denovo_OLC's shadow-model disagreement monitoring |
+| Context degradation | Long sessions and poor retrieval cause agents to reason from weak context | FAISS grounding, knowledge graph context, progressive literature search |
+| Human-in-the-loop design | Agents either over-ask humans or continue when they should stop | Quality thresholds, revise/stop logic, escalation decisions; **RecSys_ABtest**'s A0->A3 ablation ladder, where a second-model skeptical verifier gates the ship/escalate decision |
+| Production drift | ML tools degrade when input distributions shift | LFR DataMonitor, DeepVariant fine-tuning, AgenticGEM retraining loop, ZeroShot drift metrics, denovo_OLC's explicit drift-gated retraining workflow |
 
 ---
 
@@ -214,13 +215,13 @@ The recommendation and MLOps projects show that the same production principles t
 - **AgenticGEM DataDrift AutoRetrainer** applies agentic decision-making to production ads ranking: a LangGraph state machine evaluates drift reports and decides whether to retrain, skip, or escalate.
 - **RS ColdStart GraphRAG LLM** uses multimodal retrieval and graph reasoning to solve cold-start recommendation problems.
 - **Movie RecSys** demonstrates offline, nearline, and online recommendation serving with hybrid ranking and fallbacks.
-- **RecSys_OBD** is a **causal inference** project: it uses propensity-weighted and doubly-robust estimators (IPS/DR — the off-policy version of average-treatment-effect estimation) to benchmark six off-policy evaluation estimators against verified ground truth on a real e-commerce logging dataset, finding a bias-variance crossover that yields a data-scale-dependent estimator selection rule, and uses a ground-truthed synthetic stress test to establish exactly when position-bias (confounding) correction helps versus adds noise; the evaluation discipline a ranking policy needs before it ships.
-- **AgenticRL** trains offline RL (Conservative Q-Learning) and reward-model policies directly on OBD's real logged transitions, then reuses RecSys_OBD's own OPE estimators, unmodified, to price each policy's value against ground truth before any online exposure. The checked result: CQL's conservative penalty compresses an 8x offline-RL overestimation failure to within 2.2% of ground truth on the `random` log, but the natural follow-up hypothesis, that a richer adaptive log (`bts`) should train a better policy, is falsified by a positivity/overlap violation that degrades every estimator instead of improving it.
+- **RecSys_OPE** is a **causal inference** project: it uses propensity-weighted and doubly-robust estimators (IPS/DR — the off-policy version of average-treatment-effect estimation) to benchmark six off-policy evaluation estimators against verified ground truth on a real e-commerce logging dataset, finding a bias-variance crossover that yields a data-scale-dependent estimator selection rule, and uses a ground-truthed synthetic stress test to establish exactly when position-bias (confounding) correction helps versus adds noise; the evaluation discipline a ranking policy needs before it ships.
+- **RecSys_OPL** trains offline RL (Conservative Q-Learning) and reward-model policies directly on OBD's real logged transitions, then reuses RecSys_OPE's own OPE estimators, unmodified, to price each policy's value against ground truth before any online exposure. The checked result: CQL's conservative penalty compresses an 8x offline-RL overestimation failure to within 2.2% of ground truth on the `random` log, but the natural follow-up hypothesis, that a richer adaptive log (`bts`) should train a better policy, is falsified by a positivity/overlap violation that degrades every estimator instead of improving it.
 - **RecSys_ABtest** closes the loop once OPE says a policy is worth testing, and is itself a **causal inference** project answering the other half of the problem — heterogeneous rather than average effects: an A/B analysis toolkit (power/MDE, CUPED, SRM, sequential testing, delta method) validates the lift online, S/T/X-learner uplift/CATE modeling identifies who should get it, and an ablation-laddered agentic experiment analyst, reusing the citation-audit methodology from PhasedVariants AgenticCurator (A0 raw numbers → A3 tool-calling + structured planning + skeptical verifier), judges whether a given readout can be trusted enough to ship, scored against a 10-trap constructed ground truth (100% trap recall, 0% numeric hallucination by A1).
 
-**RecSys_OBD, AgenticRL, and RecSys_ABtest form a single closed loop**, a *RecSys Decision Intelligence Pipeline* that mirrors the biomedical monitor → retrain → validate loop, applied to ranking/ads decisions instead of variant calls: RecSys_OBD builds and validates the OPE infrastructure; AgenticRL trains a new policy offline and prices it with that same infrastructure; RecSys_ABtest validates the result online and supplies the agentic judgment on whether it should ship.
+**RecSys_OPE, RecSys_OPL, and RecSys_ABtest form a single closed loop**, a *RecSys Decision Intelligence Pipeline* that mirrors the biomedical monitor → retrain → validate loop, applied to ranking/ads decisions instead of variant calls: RecSys_OPE builds and validates the OPE infrastructure; RecSys_OPL trains a new policy offline and prices it with that same infrastructure; RecSys_ABtest validates the result online and supplies the agentic judgment on whether it should ship.
 
-**RecSys_OBD and RecSys_ABtest together are the complete causal inference story in this portfolio.** Causal inference classically splits into two axes: average treatment effect (what does this policy/intervention do overall) and heterogeneous treatment effect (who does it help). RecSys_OBD answers the first axis *without* randomization — propensity-weighted, doubly-robust estimation from logged data alone (the off-policy version of ATE estimation, with a causal-boundary test on confounding/position-bias correction). RecSys_ABtest answers the first axis *with* randomization (its A/B toolkit validates lift under an actual online experiment) and then the second axis (S/T/X-learner CATE/uplift). One covers off-policy, the other covers online-experiment; one covers average effect, the other covers heterogeneous effect — together they span both classical axes of causal inference rather than being two disconnected recsys techniques.
+**RecSys_OPE and RecSys_ABtest together are the complete causal inference story in this portfolio.** Causal inference classically splits into two axes: average treatment effect (what does this policy/intervention do overall) and heterogeneous treatment effect (who does it help). RecSys_OPE answers the first axis *without* randomization — propensity-weighted, doubly-robust estimation from logged data alone (the off-policy version of ATE estimation, with a causal-boundary test on confounding/position-bias correction). RecSys_ABtest answers the first axis *with* randomization (its A/B toolkit validates lift under an actual online experiment) and then the second axis (S/T/X-learner CATE/uplift). One covers off-policy, the other covers online-experiment; one covers average effect, the other covers heterogeneous effect — together they span both classical axes of causal inference rather than being two disconnected recsys techniques.
 
 These projects make the portfolio broader than biomedicine while preserving the same core thesis: production AI requires lifecycle engineering, not isolated models.
 
@@ -247,7 +248,7 @@ These projects make the portfolio broader than biomedicine while preserving the 
 - End-to-end production lifecycle: ingestion, validation, feature engineering, training, registry, serving, monitoring, drift detection, and retraining.
 - Familiarity with production infrastructure: TFX, Feast, MLflow, Kafka, Redis, FastAPI, Docker, Kubernetes, Prometheus, Grafana, DVC.
 - Ability to build feedback loops where model behavior is measured, acted on, and improved.
-- Offline-to-online decision pipelines: RecSys_OBD's OPE infrastructure reused unmodified by AgenticRL to price an offline RL policy before any online exposure, then closed by RecSys_ABtest's A/B validation and uplift targeting.
+- Offline-to-online decision pipelines: RecSys_OPE's OPE infrastructure reused unmodified by RecSys_OPL to price an offline RL policy before any online exposure, then closed by RecSys_ABtest's A/B validation and uplift targeting.
 
 ---
 
